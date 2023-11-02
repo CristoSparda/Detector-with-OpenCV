@@ -6,6 +6,8 @@ from matplotlib import pyplot as plt
 path = 'reals'
 # Initiate ORB detector
 orb = cv.ORB_create(nfeatures=1000)
+# Initiate SIFT detector 
+sift = cv.SIFT_create(nfeatures=1000)
 
 images = []
 classNames = []
@@ -50,6 +52,29 @@ def findID(img, desList, thres=15):
             finalValue = matchList.index(max(matchList))
     return finalValue
 
+#Function to detect images from the camera using SIFT detector
+def Sift(img, desList, thres=15):
+    kp2, des2 = sift.detectAndCompute(img, None)
+    bf = cv.BFMatcher()
+    matchList = []
+    finalValue = -1
+    try :
+        for des in desList:
+            matches = bf.knnMatch(des, des2, k=2)
+            good = []
+            for m,n in matches:
+                if m.distance < 0.75 * n.distance:
+                    good.append([m])
+            matchList.append(len(good))
+    except:
+        pass
+    #print(matchList)
+    if len(matchList) != 0:
+        if max(matchList) > thres:
+            finalValue = matchList.index(max(matchList))
+    return finalValue
+
+
 
 desList = findDes(images)
 
@@ -62,10 +87,10 @@ while True:
     id = findID(camera, desList)
 
     if id != -1:
-        cv.putText(camera, classNames[id],(50,50), cv.FONT_HERSHEY_COMPLEX, 1,(255,0,0),3)
+        cv.putText(camera, classNames[id],(50,50), cv.FONT_HERSHEY_COMPLEX, 1,(255,0,0),2)
 
     cv.imshow('camara', camera)
-    cv.waitKey(1)
+    cv.waitKey(0)
 
 
 ################################### ORB solo con imagenes #################################
